@@ -1,0 +1,101 @@
+[
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "BigQuery load failed because column customer_id was not found in the target table.",
+    "output": {
+      "category": "SCHEMA_ERROR",
+      "root_cause": "The source and target schemas are inconsistent because customer_id is missing from the target table.",
+      "recommendation": "Compare the source and target schemas and update the target schema or transformation mapping before rerunning the load."
+    }
+  },
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "The target table expects transaction_date but the incoming dataset contains event_date instead.",
+    "output": {
+      "category": "SCHEMA_ERROR",
+      "root_cause": "The incoming field name does not match the field expected by the target schema.",
+      "recommendation": "Verify the source-to-target mapping and rename or transform the field before loading."
+    }
+  },
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "Connection to PostgreSQL at db.internal:5432 could not be established after multiple attempts.",
+    "output": {
+      "category": "CONNECTION_ERROR",
+      "root_cause": "The ETL process could not establish a network connection to the PostgreSQL database.",
+      "recommendation": "Check database availability, network connectivity, firewall rules, and connection configuration."
+    }
+  },
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "Database connection failed with error: connection refused.",
+    "output": {
+      "category": "CONNECTION_ERROR",
+      "root_cause": "The destination database is refusing the connection request.",
+      "recommendation": "Verify that the database service is running and that the configured host, port, and network access are correct."
+    }
+  },
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "BigQuery authentication failed because the configured service account credentials were rejected.",
+    "output": {
+      "category": "AUTHENTICATION_ERROR",
+      "root_cause": "The credentials used by the pipeline were not accepted by BigQuery.",
+      "recommendation": "Verify the service account credentials, permissions, and credential configuration."
+    }
+  },
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "The pipeline could not authenticate with the source API because the access token had expired.",
+    "output": {
+      "category": "AUTHENTICATION_ERROR",
+      "root_cause": "The API access token used by the pipeline has expired.",
+      "recommendation": "Refresh or replace the expired token and verify that the pipeline has the required API permissions."
+    }
+  },
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "Data validation failed because 18 percent of customer_id values were null.",
+    "output": {
+      "category": "DATA_QUALITY_ERROR",
+      "root_cause": "The incoming dataset contains an unacceptable proportion of null customer_id values.",
+      "recommendation": "Investigate the upstream source and transformation logic and apply appropriate validation or remediation before loading."
+    }
+  },
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "The CDC consumer received the same event_id twice and attempted to process both messages.",
+    "output": {
+      "category": "DUPLICATE_EVENT",
+      "root_cause": "The same CDC event was delivered more than once and the pipeline did not eliminate the duplicate before processing.",
+      "recommendation": "Implement or verify event-id based deduplication and investigate why duplicate messages were produced or delivered."
+    }
+  },
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "The DBT transformation exceeded the configured execution timeout and was terminated.",
+    "output": {
+      "category": "TIMEOUT",
+      "root_cause": "The transformation did not complete within the configured execution time.",
+      "recommendation": "Review query performance, data volume, warehouse capacity, and timeout configuration."
+    }
+  },
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "DBT model compilation failed because the referenced source relation does not exist.",
+    "output": {
+      "category": "TRANSFORMATION_ERROR",
+      "root_cause": "The DBT model references a source relation that is unavailable or incorrectly configured.",
+      "recommendation": "Verify the source configuration and relation name, then rerun DBT compilation and the affected model."
+    }
+  },
+  {
+    "instruction": "Analyze the ETL pipeline failure and identify the failure category, root cause, and recommended action.",
+    "input": "The Dataflow job failed with an unexpected internal error and the logs do not contain enough information to determine the cause.",
+    "output": {
+      "category": "UNKNOWN_ERROR",
+      "root_cause": "The available logs do not provide sufficient information to identify the underlying failure.",
+      "recommendation": "Collect the complete Dataflow logs, error details, job metadata, and recent deployment changes before attempting remediation."
+    }
+  }
+]
