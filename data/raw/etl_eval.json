@@ -1,0 +1,26 @@
+[
+  {
+    "input": "BigQuery rejected the load because the source field account_number does not exist in the destination schema.",
+    "expected_category": "SCHEMA_ERROR"
+  },
+  {
+    "input": "The Dataflow job failed because the service account does not have permission to write to the target BigQuery dataset.",
+    "expected_category": "AUTH_ERROR"
+  },
+  {
+    "input": "The ETL pipeline exceeded the configured execution time because the transformation job is processing an unexpectedly large dataset.",
+    "expected_category": "TIMEOUT_ERROR"
+  },
+  {
+    "input": "The pipeline failed because the BigQuery API returned a quota exceeded error while loading the data.",
+    "expected_category": "QUOTA_ERROR"
+  },
+  {
+    "input": "The ETL pipeline failed because the source database connection was reset while extracting records.",
+    "expected_category": "CONNECTION_ERROR"
+  },
+  {
+    "input": "The transformation failed because the incoming transaction_amount column contains invalid string values that cannot be converted to numeric format.",
+    "expected_category": "DATA_ERROR"
+  }
+]
