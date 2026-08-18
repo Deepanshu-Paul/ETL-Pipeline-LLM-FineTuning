@@ -1,26 +1,38 @@
 [
   {
     "input": "BigQuery rejected the load because the source field account_number does not exist in the destination schema.",
-    "expected_category": "SCHEMA_ERROR"
+    "expected_category": "SCHEMA_ERROR",
+    "expected_root_cause": "The source contains account_number but the destination schema does not contain the corresponding field.",
+    "expected_recommendation": "Compare the source and target schemas and update the target schema or source-to-target mapping before rerunning the load."
   },
   {
     "input": "The Dataflow job failed because the service account does not have permission to write to the target BigQuery dataset.",
-    "expected_category": "AUTH_ERROR"
+    "expected_category": "AUTH_ERROR",
+    "expected_root_cause": "The service account lacks the required permissions to write to the target BigQuery dataset.",
+    "expected_recommendation": "Grant the required IAM permissions to the service account and rerun the pipeline."
   },
   {
     "input": "The ETL pipeline exceeded the configured execution time because the transformation job is processing an unexpectedly large dataset.",
-    "expected_category": "TIMEOUT_ERROR"
+    "expected_category": "TIMEOUT_ERROR",
+    "expected_root_cause": "The transformation is taking longer than the configured execution time because of the unexpectedly large dataset.",
+    "expected_recommendation": "Optimize the transformation or increase the execution timeout after verifying that the workload is expected."
   },
   {
     "input": "The pipeline failed because the BigQuery API returned a quota exceeded error while loading the data.",
-    "expected_category": "QUOTA_ERROR"
+    "expected_category": "QUOTA_ERROR",
+    "expected_root_cause": "The pipeline exceeded a BigQuery service quota while loading the data.",
+    "expected_recommendation": "Check the applicable BigQuery quota, reduce or distribute the workload, or request a quota increase before retrying."
   },
   {
     "input": "The ETL pipeline failed because the source database connection was reset while extracting records.",
-    "expected_category": "CONNECTION_ERROR"
+    "expected_category": "CONNECTION_ERROR",
+    "expected_root_cause": "The connection to the source database was unexpectedly reset during data extraction.",
+    "expected_recommendation": "Check network and database connectivity, connection timeouts, and retry configuration before rerunning the extraction."
   },
   {
     "input": "The transformation failed because the incoming transaction_amount column contains invalid string values that cannot be converted to numeric format.",
-    "expected_category": "DATA_ERROR"
+    "expected_category": "DATA_ERROR",
+    "expected_root_cause": "The transaction_amount column contains invalid string values that cannot be converted to the required numeric type.",
+    "expected_recommendation": "Validate and clean transaction_amount values or add appropriate type conversion handling before the transformation."
   }
 ]

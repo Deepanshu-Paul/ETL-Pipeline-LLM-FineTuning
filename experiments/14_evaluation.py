@@ -1,6 +1,6 @@
 import json
 import torch
-
+from pydantic import BaseModel,Field
 from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
@@ -15,6 +15,19 @@ ADAPTER_PATH = "outputs/qwen-etl-lora"
 
 EVAL_PATH = "data/raw/etl_eval.json"
 
+class ETLAnalysis(BaseModel):
+
+    category: str = Field(
+        min_length=3
+    )
+
+    root_cause: str = Field(
+        min_length=20
+    )
+
+    recommendation: str = Field(
+        min_length=20
+    )
 
 def load_eval_dataset():
 
@@ -51,9 +64,13 @@ def build_prompt(failure):
 
 def extract_category(response):
 
-    response_upper = response.upper()
+    text = response.upper()
 
-    categories = [
+    # ------------------------------------------------------
+    # Exact canonical labels
+    # ------------------------------------------------------
+
+    exact_categories = [
         "SCHEMA_ERROR",
         "AUTH_ERROR",
         "TIMEOUT_ERROR",
@@ -62,13 +79,199 @@ def extract_category(response):
         "DATA_ERROR",
     ]
 
-    for category in categories:
+    for category in exact_categories:
 
-        if category in response_upper:
+        if category in text:
             return category
+
+    # ------------------------------------------------------
+    # Semantic normalization
+    # ------------------------------------------------------
+
+    if any(
+        phrase in text
+        for phrase in [
+            "SCHEMA",
+            "SCHEMA ERROR",
+            "SCHEMA MISMATCH",
+            "DESTINATION SCHEMA",
+            "TARGET SCHEMA",
+            "FIELD DOES NOT EXIST",
+            "COLUMN DOES NOT EXIST",
+        ]
+    ):
+        return "SCHEMA_ERROR"
+
+    if any(
+        phrase in text
+        for phrase in [
+            "AUTHENTICATION",
+            "AUTHENTICATION ERROR",
+            "PERMISSION ERROR",
+            "PERMISSION DENIED",
+            "ACCESS DENIED",
+            "IAM",
+            "CREDENTIAL",
+        ]
+    ):
+        return "AUTH_ERROR"
+
+    if any(
+        phrase in text
+        for phrase in [
+            "TIMEOUT",
+            "TIME OUT",
+            "EXECUTION TIME EXCEEDED",
+            "EXECUTION TIME",
+            "TIME LIMIT",
+        ]
+    ):
+        return "TIMEOUT_ERROR"
+
+    if any(
+        phrase in text
+        for phrase in [
+            "QUOTA",
+            "QUOTA EXCEEDED",
+            "RATE LIMIT",
+        ]
+    ):
+        return "QUOTA_ERROR"
+
+    if any(
+        phrase in text
+        for phrase in [
+            "CONNECTION RESET",
+            "DATABASE CONNECTION",
+            "CONNECTION FAILURE",
+            "CONNECTION ERROR",
+            "NETWORK CONNECTION",
+        ]
+    ):
+        return "CONNECTION_ERROR"
+
+    if any(
+        phrase in text
+        for phrase in [
+            "DATA VALIDATION",
+            "DATA TRANSFORMATION",
+            "DATA ERROR",
+            "INVALID DATA",
+            "INVALID VALUE",
+            "TYPE CONVERSION",
+        ]
+    ):
+        return "DATA_ERROR"
 
     return None
 
+def validate_analysis(data):
+
+    try:
+        analysis = ETLAnalysis.model_validate(data)
+
+        return analysis, True
+
+    except Exception as error:
+
+        print(
+            f"Pydantic validation failed: {error}"
+        )
+
+        return None, False
+
+def extract_analysis(response):
+
+    category = extract_category(response)
+#-------------------------------------------------
+#----------------TEMP----------------------------
+    print()
+    print("DEBUG CATEGORY")
+    print(f"Extracted category : {category}")
+    print()
+#-------------------------------------------------
+#----------------TEMP----------------------------
+
+    response_lower = response.lower()
+
+    root_cause = ""
+    recommendation = ""
+
+    # ------------------------------------------------------
+    # Root Cause
+    # ------------------------------------------------------
+
+    root_cause_markers = [
+        "root cause:",
+        "**root cause:**",
+        "root cause",
+    ]
+
+    for marker in root_cause_markers:
+
+        if marker in response_lower:
+
+            start = (
+                response_lower.find(marker)
+                + len(marker)
+            )
+
+            remaining = response[start:]
+
+            recommendation_position = (
+                remaining.lower().find(
+                    "recommended action"
+                )
+            )
+
+            if recommendation_position != -1:
+
+                root_cause = (
+                    remaining[
+                        :recommendation_position
+                    ]
+                    .strip()
+                )
+
+            else:
+
+                root_cause = remaining.strip()
+
+            break
+
+    # ------------------------------------------------------
+    # Recommendation
+    # ------------------------------------------------------
+
+    recommendation_markers = [
+        "recommended action:",
+        "**recommended action:**",
+        "recommended action",
+    ]
+
+    for marker in recommendation_markers:
+
+        if marker in response_lower:
+
+            start = (
+                response_lower.find(marker)
+                + len(marker)
+            )
+
+            recommendation = (
+                response[start:]
+                .strip()
+            )
+
+            break
+
+    data = {
+        "category": category,
+        "root_cause": root_cause,
+        "recommendation": recommendation,
+    }
+
+    return data
 
 def generate_response(
     model,
@@ -138,9 +341,18 @@ def evaluate_model(
             messages,
         )
 
-        predicted_category = extract_category(
+        analysis_data = extract_analysis(
             response
         )
+
+        analysis, is_valid = validate_analysis(
+            analysis_data
+        )
+
+        if analysis is not None:
+            predicted_category = analysis.category
+        else:
+            predicted_category = None
 
         expected_category = (
             example["expected_category"]
@@ -173,7 +385,27 @@ def evaluate_model(
             f"Correct   : "
             f"{is_correct}"
         )
+        print(
+            f"Valid Structure : "
+            f"{is_valid}"
+        )
 
+        if analysis is not None:
+
+            print(
+                f"Category        : "
+                f"{analysis.category}"
+            )
+
+            print(
+                f"Root Cause      : "
+                f"{analysis.root_cause[:150]}"
+            )
+
+            print(
+                f"Recommendation  : "
+                f"{analysis.recommendation[:150]}"
+            )
         print(
             f"Response  : "
             f"{response[:300]}"
