@@ -58,24 +58,25 @@ Examples cover schema, connection, authentication, timeout, transformation, data
 
 ## Setup
 
-This project requires Python 3.12.
+This project requires [uv](https://docs.astral.sh/uv/) and Python 3.12. `uv` reads the project dependencies from `pyproject.toml` and uses the committed `uv.lock` file to create a reproducible environment.
 
 ```bash
 git clone https://github.com/Deepanshu-Paul/ETL-Pipeline-LLM-FineTuning.git
 cd ETL-Pipeline-LLM-FineTuning
-python -m venv .venv
+uv sync
 ```
 
-Activate the virtual environment, then install dependencies:
+Run project commands through `uv`:
 
 ```bash
-# Windows PowerShell
-.venv\Scripts\Activate.ps1
+# Training (available after the training entry point is implemented)
+uv run python train.py
 
-pip install -r requirements.txt
+# Inference (available after the inference entry point is implemented)
+uv run python infer.py
 ```
 
-`requirements.txt` includes PyTorch with CUDA 12.4 packages. Ensure your NVIDIA driver and hardware are compatible, or install a suitable PyTorch build for your environment before installing the remaining dependencies.
+For GPU workloads, ensure your NVIDIA driver and installed PyTorch build are compatible with your CUDA environment.
 
 ## Status
 
